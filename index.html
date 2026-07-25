@@ -1,13 +1,455 @@
 <!doctype html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#090909" />
-    <title>천명 — AI 사주 분석</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0b0b" />
+  <meta name="description" content="생년월일시를 바탕으로 사주 원국과 오행, 성격, 연애, 결혼, 사업, 재물, 건강을 분석합니다." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <title>천명 사주 분석</title>
+  <style>
+    :root{
+      --bg:#090909;--panel:#151310;--panel2:#11100e;--line:#3b3022;
+      --gold:#d8b36b;--gold2:#9d7430;--text:#f3eee3;--muted:#aaa296;
+      --danger:#e58c7a;--green:#9ebd86;--blue:#7f9fca
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;font-family:Arial,"Noto Sans KR",sans-serif;color:var(--text);
+      background:
+        radial-gradient(circle at 15% 0%,rgba(157,116,48,.18),transparent 28%),
+        linear-gradient(180deg,#080808,#0d0c0b);
+      min-height:100vh
+    }
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .wrap{max-width:1100px;margin:auto;padding:28px 18px 90px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:32px}
+    .brand{font-family:serif;color:var(--gold);font-size:24px;letter-spacing:4px}
+    .install{display:none;width:auto;margin:0;padding:10px 14px;border:1px solid #6c5532;background:#16130f;color:var(--gold);border-radius:10px}
+    .hero{padding:30px 0 18px}
+    .eyebrow{color:#b78e4f;font-size:11px;letter-spacing:4px;font-weight:800}
+    h1{font-family:serif;font-size:clamp(42px,8vw,82px);line-height:1.12;margin:18px 0 20px;letter-spacing:-4px}
+    h1 em{color:var(--gold);font-style:normal}
+    .intro{max-width:720px;color:var(--muted);font-size:16px;line-height:1.9}
+    .card{background:rgba(22,20,17,.94);border:1px solid var(--line);padding:24px;border-radius:18px;box-shadow:0 25px 80px rgba(0,0,0,.3)}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    label{display:block;color:#c9bea9;font-size:12px;font-weight:700;margin:10px 0}
+    input,select,textarea{
+      width:100%;margin-top:8px;padding:14px 15px;border:1px solid #3f3931;
+      background:#0f0f0e;color:#fff;border-radius:10px;outline:none
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--gold2)}
+    textarea{min-height:90px;resize:vertical}
+    .segmented{display:flex;border:1px solid #3f3931;border-radius:10px;overflow:hidden;margin:10px 0 16px}
+    .segmented button{flex:1;border:0;padding:12px;background:transparent;color:#8e8579}
+    .segmented button.active{background:linear-gradient(90deg,#9f7530,#d5b06a);color:#0b0a09;font-weight:900}
+    .primary,.secondary{
+      width:100%;padding:17px;border:0;border-radius:12px;font-weight:900;
+      background:linear-gradient(90deg,#9f7530,#dfbd79);color:#0b0a09;margin-top:16px
+    }
+    .secondary{max-width:260px;display:block;margin:28px auto 0}
+    .notice{font-size:10px;color:#726b63;line-height:1.6;margin-top:13px}
+    .result{display:none;margin-top:42px}
+    .result-head h2{font-family:serif;font-size:clamp(34px,6vw,58px);margin:10px 0 15px}
+    .result-head p{color:#b6aea2;line-height:1.9}
+    .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:28px 0}
+    .pillar{background:#15130f;border:1px solid #3c3227;border-radius:15px;padding:20px;text-align:center}
+    .pillar span{color:#8e8376;font-size:12px}
+    .pillar strong{font-family:serif;display:block;font-size:42px;line-height:1.15;margin:12px 0}
+    .pillar small{color:#aaa092}
+    .element-card{display:grid;grid-template-columns:230px 1fr;gap:28px;align-items:start}
+    .element-card h3{font-family:serif;font-size:28px;margin:7px 0}
+    .bars{display:grid;gap:12px}
+    .bar{display:grid;grid-template-columns:25px 1fr 28px;gap:12px;align-items:center;font-size:12px}
+    .track{height:8px;background:#302b24;border-radius:20px;overflow:hidden}
+    .fill{height:100%;background:linear-gradient(90deg,#9e7430,#deb970)}
+    .summary-box{margin-top:16px;padding:16px;border-radius:12px;background:#0e0e0d;border:1px solid #28231d;color:#bbb3a7;line-height:1.8}
+    .report-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+    .section{background:var(--panel2);border:1px solid #2f2a23;border-radius:16px;padding:26px}
+    .section .num{color:#8c6933;font-size:11px;letter-spacing:2px}
+    .section h3{font-family:serif;color:#e6d4b4;font-size:24px;margin:10px 0 16px}
+    .section p{color:#aaa398;line-height:1.9;font-size:14px;white-space:pre-line}
+    .tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .tag{padding:7px 10px;border:1px solid #4a3b28;border-radius:999px;color:#d8c09a;font-size:11px}
+    .warning{border-color:#5d342d;color:#e1a194}
+    footer{text-align:center;color:#5c554d;font-size:10px;letter-spacing:2px;margin-top:45px}
+    @media(max-width:760px){
+      .form-grid,.report-grid,.element-card{grid-template-columns:1fr}
+      .pillars{grid-template-columns:1fr 1fr}
+      .pillar strong{font-size:35px}
+      .wrap{padding-bottom:70px}
+    }
+    @media(display-mode:standalone){
+      .install{display:none!important}
+      body{padding-top:env(safe-area-inset-top)}
+    }
+    @media print{
+      .topbar,.hero,.form-card,.secondary,footer{display:none!important}
+      body{background:#fff;color:#111}
+      .result{display:block!important;margin:0}
+      .card,.section,.pillar{background:#fff;color:#111;border-color:#bbb;box-shadow:none;break-inside:avoid}
+      .section p,.result-head p,.summary-box{color:#333}
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="topbar">
+      <div class="brand">天命</div>
+      <button id="installBtn" class="install">홈 화면에 설치</button>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">FOUR PILLARS ANALYSIS</div>
+      <h1>당신의 시간을<br><em>사주로 해석하다</em></h1>
+      <p class="intro">생년월일시를 입력하면 사주 원국과 오행을 계산하고, 성격·내면 갈등·인간관계·연애·결혼·사업·재물·건강·삶의 방향까지 상세하게 분석합니다.</p>
+    </section>
+
+    <form id="form" class="card form-card">
+      <div class="form-grid">
+        <label>이름 또는 닉네임
+          <input id="name" value="현우" placeholder="선택 입력">
+        </label>
+        <label>성별
+          <select id="gender">
+            <option value="male">남성</option>
+            <option value="female">여성</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="form-grid">
+        <label>생년월일
+          <input id="date" type="date" value="1990-03-05" required>
+        </label>
+        <label>태어난 시간
+          <input id="time" type="time" value="09:30" required>
+        </label>
+      </div>
+
+      <div class="segmented">
+        <button type="button" id="solarBtn" class="active">양력</button>
+        <button type="button" id="lunarBtn">음력</button>
+      </div>
+
+      <label id="leapWrap" style="display:none">윤달 여부
+        <select id="leap">
+          <option value="false">평달</option>
+          <option value="true">윤달</option>
+        </select>
+      </label>
+
+      <label>가장 궁금한 분야
+        <input id="focus" value="연애, 사업, 결혼" placeholder="예: 연애, 사업, 결혼">
+      </label>
+
+      <label>현재 고민이나 상황
+        <textarea id="concern" placeholder="예: 사업 방향을 바꿔야 할지, 결혼 시기는 언제가 좋은지 궁금합니다."></textarea>
+      </label>
+
+      <button class="primary" type="submit">상세 사주 분석하기</button>
+      <p class="notice">사주는 전통 문화적 해석 도구이며 과학적 진단이나 미래의 확정적 예언이 아닙니다. 건강·법률·재무 결정은 전문가 상담을 우선하세요.</p>
+    </form>
+
+    <section id="result" class="result">
+      <div class="result-head">
+        <div class="eyebrow">YOUR SAJU REPORT</div>
+        <h2 id="reportTitle"></h2>
+        <p id="reportSummary"></p>
+      </div>
+
+      <div id="pillars" class="pillars"></div>
+
+      <div class="card element-card">
+        <div>
+          <div class="eyebrow">FIVE ELEMENTS</div>
+          <h3>오행 균형</h3>
+          <p id="balanceText" class="sub"></p>
+        </div>
+        <div>
+          <div id="bars" class="bars"></div>
+          <div id="balanceAdvice" class="summary-box"></div>
+        </div>
+      </div>
+
+      <div id="sections" class="report-grid"></div>
+      <button class="secondary" onclick="window.print()">결과 저장·인쇄</button>
+    </section>
+
+    <footer>© 2026 CHEONMYEONG SAJU LAB</footer>
+  </main>
+
+<script type="module">
+  import {
+    calculateFourPillars,
+    getHeavenlyStemElement,
+    getEarthlyBranchElement
+  } from "https://esm.sh/manseryeok@2.0.0";
+
+  const STEM = {
+    갑:{e:"목",yy:"양",img:"큰 나무",core:"개척성과 성장 욕구가 강하고, 자신이 옳다고 판단한 방향으로 밀고 나가는 힘이 큽니다.",shadow:"고집이 세 보이거나 다른 사람의 속도를 기다리지 못할 수 있습니다."},
+    을:{e:"목",yy:"음",img:"덩굴과 화초",core:"유연하고 관계 감각이 좋으며, 부드럽게 우회하면서도 결국 원하는 것을 얻는 끈기가 있습니다.",shadow:"주변 반응을 지나치게 의식하거나 결정을 미루기 쉽습니다."},
+    병:{e:"화",yy:"양",img:"태양",core:"표현력과 존재감이 강하고, 분위기를 끌어올리며 사람을 움직이게 하는 힘이 있습니다.",shadow:"감정과 판단이 빨라 과열되거나 성급한 결정을 내릴 수 있습니다."},
+    정:{e:"화",yy:"음",img:"촛불",core:"섬세한 집중력과 통찰이 있으며, 한 사람이나 한 목표에 깊이 몰입하는 성향이 강합니다.",shadow:"감정을 안으로 쌓다가 갑자기 차갑게 돌아설 수 있습니다."},
+    무:{e:"토",yy:"양",img:"큰 산",core:"안정감과 책임감이 강하고, 위기 상황에서도 버티며 중심을 잡는 힘이 있습니다.",shadow:"변화를 늦게 받아들이고 혼자 책임을 떠안는 경향이 있습니다."},
+    기:{e:"토",yy:"음",img:"논밭",core:"현실 감각과 관리 능력이 좋으며, 사람과 자원을 꾸준히 돌보고 키우는 힘이 있습니다.",shadow:"걱정이 많아지고 타인의 문제까지 자기 몫으로 떠안을 수 있습니다."},
+    경:{e:"금",yy:"양",img:"강철",core:"결단력과 승부욕이 강하고, 기준이 분명하며 어려운 상황을 빠르게 정리하는 힘이 있습니다.",shadow:"말이 직선적이고 상대의 감정을 놓치기 쉽습니다."},
+    신:{e:"금",yy:"음",img:"보석",core:"정교함과 미적 감각, 완성도에 대한 기준이 높으며 사람과 상황의 미세한 차이를 잘 봅니다.",shadow:"완벽주의와 예민함 때문에 스스로와 타인에게 엄격해질 수 있습니다."},
+    임:{e:"수",yy:"양",img:"큰 바다",core:"확장성과 정보력이 좋고, 여러 사람과 기회를 연결하며 큰 흐름을 읽는 능력이 있습니다.",shadow:"자유를 중시해 한곳에 오래 머무르기 어렵고 생각이 분산될 수 있습니다."},
+    계:{e:"수",yy:"음",img:"비와 이슬",core:"직관과 관찰력이 뛰어나고, 상대의 감정과 분위기를 세밀하게 읽는 능력이 있습니다.",shadow:"생각이 많고 불안을 혼자 품으면서 실행이 늦어질 수 있습니다."}
+  };
+
+  const E = {
+    목:{talent:"성장·기획·교육·확장·브랜딩",excess:"계획과 시작은 많지만 마무리가 약해지거나 자기 방식만 고집하기 쉽습니다.",lack:"장기 비전과 새로운 도전에 대한 자신감이 흔들릴 수 있습니다.",people:"성장 욕구가 있고 약속을 지키며 함께 미래를 만드는 사람",avoid:"말만 앞서고 꾸준함이 없는 사람",work:"교육·코칭, 콘텐츠, 기획, 브랜딩, 신규사업",habit:"아침 산책, 스트레칭, 자연 속 활동, 주간 목표 기록"},
+    화:{talent:"표현·홍보·영업·리더십·속도",excess:"감정과 소비가 빨라지고, 관계와 사업 모두에서 과열되기 쉽습니다.",lack:"자기 홍보와 관계의 온도가 낮아져 좋은 기회를 놓칠 수 있습니다.",people:"반응이 분명하고 따뜻하며 당신의 성과를 인정해 주는 사람",avoid:"무관심으로 상대를 조종하거나 감정 기복이 심한 사람",work:"영업·마케팅, 서비스업, 영상·미디어, 리더 역할",habit:"햇빛 보기, 유산소 운동, 규칙적 수면, 감정이 올라올 때 즉답하지 않기"},
+    토:{talent:"운영·관리·신뢰·조정·자산 축적",excess:"책임을 혼자 떠안고 변화에 둔감해지며 걱정이 많아질 수 있습니다.",lack:"생활 루틴과 돈 관리가 흔들리고 결정이 자주 바뀔 수 있습니다.",people:"생활이 안정적이고 책임감이 있으며 현실적인 대화를 하는 사람",avoid:"의존적이면서 책임을 미루는 사람",work:"운영관리, 부동산·공간사업, 조직관리, 유통, 자산관리",habit:"식사 시간 고정, 근력 운동, 가계부, 공간 정리"},
+    금:{talent:"판단·분석·정리·계약·품질 관리",excess:"말이 날카로워지고 완벽주의와 흑백논리가 강해질 수 있습니다.",lack:"거절과 가격 결정, 계약 조건을 명확히 하는 데 약해질 수 있습니다.",people:"기준이 분명하고 약속과 돈 문제를 투명하게 처리하는 사람",avoid:"말을 자주 바꾸고 책임을 회피하는 사람",work:"재무·법무, 데이터, 기술, 컨설팅, 품질관리",habit:"정리정돈, 호흡 운동, 계약 체크리스트, 불필요한 일 정리"},
+    수:{talent:"정보·통찰·소통·유연성·기회 포착",excess:"생각이 너무 많아 실행이 늦고 감정을 안으로 쌓기 쉽습니다.",lack:"상황 변화에 대한 대응력과 휴식 능력이 떨어질 수 있습니다.",people:"대화가 잘 통하고 감정을 강요하지 않으며 자유를 존중하는 사람",avoid:"사생활을 통제하고 감정적으로 몰아붙이는 사람",work:"상담·연구, IT·플랫폼, 유통·무역, 기획, 커뮤니케이션",habit:"충분한 수분과 수면, 기록, 걷기·수영, 정보 섭취 시간 제한"}
+  };
+
+  const GENERATE={목:"화",화:"토",토:"금",금:"수",수:"목"};
+  const CONTROL={목:"토",토:"수",수:"화",화:"금",금:"목"};
+  const GENERATED_BY={화:"목",토:"화",금:"토",수:"금",목:"수"};
+  const CONTROLLED_BY={토:"목",수:"토",화:"수",금:"화",목:"금"};
+
+  let calendar="solar";
+  let deferredPrompt=null;
+
+  const $=s=>document.querySelector(s);
+  const stem=p=>p?.heavenlyStem||p?.stem||"";
+  const branch=p=>p?.earthlyBranch||p?.branch||"";
+  const se=s=>STEM[s]?.e||getHeavenlyStemElement(s);
+  const be=b=>getEarthlyBranchElement(b);
+
+  $("#solarBtn").onclick=()=>{calendar="solar";$("#solarBtn").classList.add("active");$("#lunarBtn").classList.remove("active");$("#leapWrap").style.display="none"};
+  $("#lunarBtn").onclick=()=>{calendar="lunar";$("#lunarBtn").classList.add("active");$("#solarBtn").classList.remove("active");$("#leapWrap").style.display="block"};
+
+  window.addEventListener("beforeinstallprompt",e=>{
+    e.preventDefault();deferredPrompt=e;$("#installBtn").style.display="block";
+  });
+  $("#installBtn").onclick=async()=>{
+    if(!deferredPrompt)return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt=null;
+    $("#installBtn").style.display="none";
+  };
+
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error));
+  }
+
+  function countElements(chart){
+    const c={목:0,화:0,토:0,금:0,수:0};
+    ["year","month","day","hour"].forEach(k=>{
+      const p=chart[k],a=se(stem(p)),b=be(branch(p));
+      if(a in c)c[a]++;if(b in c)c[b]++;
+    });
+    return c;
+  }
+
+  function keysBy(c,type){
+    const vals=Object.values(c),target=type==="max"?Math.max(...vals):Math.min(...vals);
+    return Object.keys(c).filter(k=>c[k]===target);
+  }
+
+  function relationTone(dm,counts){
+    const self=counts[dm],resource=counts[GENERATED_BY[dm]]||0,output=counts[GENERATE[dm]]||0;
+    if(self>=3)return "독립성과 주도권 욕구가 강합니다. 누군가가 지나치게 간섭하면 겉으로는 참다가 어느 순간 관계를 끊거나 자기 방식으로 밀어붙일 수 있습니다.";
+    if(resource>=3)return "생각과 준비는 충분하지만 실행 전에 확신을 더 얻고 싶어 하는 경향이 있습니다. 안전하다고 느끼는 환경에서는 큰 힘을 내지만, 낯선 변화 앞에서는 시간이 필요합니다.";
+    if(output>=3)return "표현과 행동이 빠르고 사람들에게 영향력을 주는 편입니다. 다만 상대가 따라오지 못하면 답답함을 느끼고 말이 강해질 수 있습니다.";
+    return "상황과 상대를 비교적 균형 있게 보는 편입니다. 다만 갈등을 피하려다 중요한 요구를 늦게 말하는 습관은 주의해야 합니다.";
+  }
+
+  function moneyText(dm,counts){
+    const wealth=CONTROL[dm],n=counts[wealth]||0;
+    if(n>=3)return `재성에 해당하는 ${wealth} 기운이 강해 거래·매출·현금 흐름에 민감합니다. 돈을 벌 기회는 잘 보지만, 욕심이 커질 때 확장 속도가 과해질 수 있습니다. 매출보다 순이익, 현금흐름, 회수 기간을 기준으로 투자 결정을 내려야 합니다.`;
+    if(n===2)return `재성에 해당하는 ${wealth} 기운이 적당히 있어 현실적인 돈 감각을 활용하기 좋습니다. 큰 한 방보다 반복 매출과 재구매 구조를 만들 때 안정적으로 축적됩니다.`;
+    return `재성에 해당하는 ${wealth} 기운이 약한 편이라 돈은 감각보다 시스템으로 관리해야 합니다. 자동저축, 고정비 한도, 계약서, 가격표, 월별 손익표처럼 숫자로 보이는 구조가 재물운을 보완합니다.`;
+  }
+
+  function loveText(dm,gender){
+    const base={
+      목:"함께 성장하고 미래 계획을 세울 수 있는 관계에서 사랑을 크게 느낍니다. 상대가 발전 의지가 없거나 반복적으로 약속을 어기면 마음이 빠르게 식을 수 있습니다.",
+      화:"표현과 반응이 분명한 연애를 좋아합니다. 관계의 온도가 낮아지면 불안을 느끼기 쉬우므로 감정을 시험하기보다 원하는 것을 직접 말하는 것이 중요합니다.",
+      토:"안정감과 생활의 합을 중요하게 봅니다. 말보다 행동과 꾸준함으로 사랑을 확인하며, 결혼 후에는 현실적인 책임 분담이 관계의 핵심이 됩니다.",
+      금:"신뢰와 기준이 분명한 연애를 원합니다. 애매한 관계를 오래 견디지 못하고, 실망이 쌓이면 한 번에 정리하는 경향이 있습니다.",
+      수:"대화와 정서적 교감이 중요합니다. 상대를 오래 관찰한 뒤 마음을 열며, 자유를 존중받을 때 애정이 깊어집니다."
+    }[dm];
+    const caution=gender==="male"
+      ?"배우자 선택에서 외적인 끌림만큼 생활력·책임감·경제관념을 반드시 확인해야 합니다."
+      :"배우자 선택에서 말보다 실제 행동, 책임감, 감정 조절 능력을 오래 지켜보는 것이 중요합니다.";
+    return `${base} ${caution}`;
+  }
+
+  function makeSections({chart,counts,name,focus,concern,gender}){
+    const ds=stem(chart.day),info=STEM[ds],dm=info.e,strong=keysBy(counts,"max"),weak=keysBy(counts,"min");
+    const output=GENERATE[dm],resource=GENERATED_BY[dm],wealth=CONTROL[dm],authority=CONTROLLED_BY[dm];
+    const concernLine=concern?`\n\n현재 고민인 “${concern}”은 감정적으로 한 번에 결론 내리기보다, 3개월 단위 실행 계획과 숫자 기준으로 나누어 판단하는 것이 좋습니다.`:"";
+    const startJobs=[E[dm].work,E[output].work,E[wealth].work].join(", ");
+
+    return [
+      ["타고난 성격과 기질",
+`${ds}일간은 ${info.img}에 비유됩니다. ${info.core}
+
+핵심 강점은 ${E[dm].talent}입니다. 문제를 발견하면 남에게 맡기기보다 직접 구조를 바꾸려는 성향이 강합니다. 인정받고 싶어 하기보다 자신의 기준에 맞는 결과를 만들고 싶어 하는 마음이 더 큽니다.
+
+그림자 성향은 ${info.shadow} 특히 피곤하거나 통제받는다고 느낄 때 이 성향이 강하게 나타납니다.`],
+      ["내면의 갈등과 성향적 모순",
+`${relationTone(dm,counts)}
+
+겉으로는 현실적이고 냉정해 보여도, 실제 내면에서는 인정·신뢰·자율성을 매우 중요하게 여깁니다. 사람에게 기대하지 않는 척하지만, 믿었던 사람이 약속을 어기면 생각보다 오래 상처가 남을 수 있습니다.
+
+강한 ${strong.join(", ")} 기운은 재능이지만 과하면 ${strong.map(x=>E[x].excess).join(" ")} 약한 ${weak.join(", ")} 기운은 ${weak.map(x=>E[x].lack).join(" ")}`],
+      ["인간관계와 잘 맞는 사람",
+`잘 맞는 사람은 ${E[resource].people}, 그리고 ${E[output].people}입니다. 이런 사람은 당신의 생각을 안정시키거나 실행과 표현으로 연결해 줍니다.
+
+당신은 능력 있는 사람, 말과 행동이 같은 사람, 자기 몫을 책임지는 사람을 높게 평가합니다. 반대로 친하다는 이유로 선을 넘거나, 책임 없이 간섭하는 사람에게는 강한 거부감을 느낍니다.
+
+대인관계의 장점은 사람의 능력과 상황을 빠르게 파악하는 것입니다. 단점은 실망한 뒤 충분히 설명하지 않고 마음속에서 이미 관계를 끝내는 것입니다.`],
+      ["피해야 할 사람",
+`가장 조심해야 할 유형은 다음과 같습니다.
+
+• 말은 크지만 실행과 책임이 없는 사람
+• 돈과 약속을 애매하게 처리하는 사람
+• 친밀함을 이유로 사생활과 선택을 통제하는 사람
+• 피해자 역할을 반복하며 당신이 해결해 주길 바라는 사람
+• 처음에는 과하게 칭찬하지만 원하는 것을 얻지 못하면 태도가 바뀌는 사람
+
+특히 ${E[authority].avoid}, 그리고 ${E[strong[0]].avoid}에게 장기간 끌려가면 감정 소모와 금전 손실이 함께 생길 수 있습니다.`],
+      ["연애운과 연애 스타일",
+`${loveText(dm,gender)}
+
+당신은 가벼운 호감보다 신뢰가 쌓였을 때 훨씬 깊이 들어가는 편입니다. 연애 초반에는 상대를 관찰하지만, 마음을 열면 책임감 있게 관계를 유지하려 합니다.
+
+피해야 할 연애 상대는 질투와 통제로 애정을 확인하는 사람, 경제관념이 불분명한 사람, 갈등이 생길 때 대화를 피하거나 잠수하는 사람입니다. 외모나 강한 끌림보다 일관성·책임감·생활 리듬을 확인해야 합니다.`],
+      ["결혼운과 배우자 관계",
+`결혼 후에는 사랑의 감정보다 생활 운영 방식이 더 중요해집니다. 돈 관리, 집안일, 부모님 문제, 개인 시간, 자녀 계획을 암묵적으로 넘기지 말고 구체적으로 합의해야 합니다.
+
+배우자는 ${E[resource].people}이 가장 안정적이며, ${E[output].people}도 당신의 매력과 사회적 활동성을 끌어올릴 수 있습니다.
+
+결혼 생활에서 가장 큰 위험은 ‘내가 더 많이 책임지고 있으니 상대도 알아서 이해하겠지’라는 생각입니다. 불만이 쌓이기 전에 역할과 기대를 말로 정리해야 오래갑니다.`],
+      ["사업운과 직업운",
+`잘 맞는 분야는 ${startJobs}입니다.
+
+조직에서는 단순 실무자보다 운영 책임자, 팀 리더, 성과 구조를 만드는 역할이 맞습니다. 독립한다면 특정 문제를 해결해 주는 서비스형 사업, 지역 기반 사업, 회원·구독·재구매가 반복되는 구조가 유리합니다.
+
+당장 시작하기 좋은 일의 예시는 다음과 같습니다.
+• 기존 경험을 상담·코칭 상품으로 만들기
+• 지역 고객을 모으는 콘텐츠 채널 운영
+• 반복 업무를 템플릿·교육 프로그램으로 판매
+• 고객 관리와 재구매를 자동화하는 서비스
+• 한 가지 강점을 프리미엄 패키지로 묶어 단가 높이기
+
+${focus} 분야를 우선순위로 두되, 처음부터 크게 벌이기보다 30일 안에 판매 가능한 최소 상품을 먼저 만들어야 합니다.${concernLine}`],
+      ["재물운과 돈을 모으는 방식",
+`${moneyText(dm,counts)}
+
+재물을 축적하는 핵심은 ‘잘 버는 능력’보다 ‘남는 구조’를 만드는 것입니다. 월별 고정비 상한, 사업용 통장 분리, 세금 적립, 투자 회수 기간을 반드시 정하세요.
+
+주의할 점은 친분 때문에 가격을 깎아주거나, 검증되지 않은 사람과 동업하거나, 기분이 좋을 때 확장 투자하는 것입니다. 계약과 돈 문제는 인간관계와 분리해야 합니다.`],
+      ["건강운과 생활 관리",
+`사주 해석상 강한 ${strong.join(", ")} 기운이 과해질 때는 ${strong.map(x=>E[x].excess).join(" ")} 약한 ${weak.join(", ")} 기운은 생활 리듬으로 보완해야 합니다.
+
+권장 습관은 ${weak.map(x=>E[x].habit).join(", ")}입니다. 특히 수면 부족과 과로가 누적되면 판단력과 감정 조절이 함께 흔들릴 수 있으므로, 바쁜 시기일수록 운동 강도보다 수면과 회복 시간을 먼저 확보하세요.
+
+이는 전통적 해석이며 의학적 진단이 아닙니다. 증상이 있거나 건강이 걱정될 때는 검진과 의료진 상담이 우선입니다.`],
+      ["대운과 인생의 변화점",
+`대운은 사건을 확정하는 예언이 아니라 약 10년 단위로 어떤 역할과 환경이 강조되는지 보는 틀입니다.
+
+${strong.join(", ")} 기운이 반복되는 시기에는 성과가 빠르지만 과로·독단·관계 충돌을 조절해야 합니다. ${weak.join(", ")} 기운이 들어오는 시기에는 새로운 직업, 연애, 결혼, 자산 구조를 만드는 기회가 생길 수 있습니다.
+
+중요한 변화점에서는 한 번에 모든 것을 바꾸기보다 ‘사람·돈·일’ 중 하나씩 순서대로 움직이는 것이 안전합니다.`],
+      ["오행 보완법",
+`부족한 오행은 물건의 색깔만으로 보완되는 것이 아니라 생활 방식으로 보완하는 것이 효과적입니다.
+
+${weak.map(x=>`${x}: ${E[x].habit}`).join("\n")}
+
+강한 오행은 없애야 할 것이 아니라 잘 쓰는 방향을 정해야 합니다. ${strong.map(x=>`${x}의 강점인 ${E[x].talent}을 직업과 사업의 핵심 능력으로 사용하세요.`).join(" ")}`],
+      ["삶의 주요 목표와 방향",
+`당신에게 가장 중요한 목표는 개인의 감각과 노력에만 의존하지 않고, 능력을 시스템·브랜드·자산으로 바꾸는 것입니다.
+
+혼자 버티는 방식보다 역할과 기준이 명확한 협업, 즉흥적인 매출보다 반복 매출, 감정적인 인간관계보다 신뢰가 누적되는 관계를 선택할수록 운의 장점이 크게 살아납니다.
+
+당신의 인생은 ‘남이 정해 준 안전한 길’을 따르는 것보다, 스스로 기준을 만들고 그것을 현실적인 구조로 완성할 때 가장 강해집니다.`]
+    ];
+  }
+
+  $("#form").addEventListener("submit",e=>{
+    e.preventDefault();
+    try{
+      const [year,month,day]=$("#date").value.split("-").map(Number);
+      const [hour,minute]=$("#time").value.split(":").map(Number);
+      const chart=calculateFourPillars({
+        year,month,day,hour,minute,
+        isLunar:calendar==="lunar",
+        isLeapMonth:calendar==="lunar"&&$("#leap").value==="true",
+        gender:$("#gender").value,
+        dayBoundary:"midnight"
+      });
+
+      const name=$("#name").value.trim()||"사용자";
+      const counts=countElements(chart);
+      const ds=stem(chart.day),info=STEM[ds],strong=keysBy(counts,"max"),weak=keysBy(counts,"min");
+      const total=Object.values(counts).reduce((a,b)=>a+b,0);
+
+      $("#reportTitle").textContent=`${name}님의 상세 사주 분석`;
+      $("#reportSummary").textContent=`사주의 중심은 ${ds}${info.yy}${info.e}입니다. ${info.img}의 기질을 바탕으로 ${E[info.e].talent}이 핵심 재능으로 나타납니다. 강한 오행은 ${strong.join(", ")}, 보완이 필요한 오행은 ${weak.join(", ")}입니다.`;
+
+      $("#pillars").innerHTML=[
+        ["시주",chart.hour],["일주",chart.day],["월주",chart.month],["년주",chart.year]
+      ].map(([t,p])=>`<div class="pillar"><span>${t}</span><strong>${stem(p)}${branch(p)}</strong><small>${se(stem(p))} · ${be(branch(p))}</small></div>`).join("");
+
+      $("#bars").innerHTML=Object.entries(counts).map(([k,v])=>`
+        <div class="bar"><span>${k}</span><div class="track"><div class="fill" style="width:${v/total*100}%"></div></div><b>${v}</b></div>
+      `).join("");
+
+      $("#balanceText").textContent=`강한 오행: ${strong.join(", ")} / 약한 오행: ${weak.join(", ")}`;
+      $("#balanceAdvice").textContent=`${strong.map(x=>E[x].excess).join(" ")} ${weak.map(x=>E[x].lack).join(" ")} 부족한 기운은 색상보다 생활 습관과 사람 선택, 일의 방식으로 보완하는 것이 효과적입니다.`;
+
+      const sections=makeSections({
+        chart,counts,name,
+        focus:$("#focus").value.trim()||"연애, 사업, 결혼",
+        concern:$("#concern").value.trim(),
+        gender:$("#gender").value
+      });
+
+      $("#sections").innerHTML=sections.map(([title,body],i)=>`
+        <article class="section">
+          <span class="num">${String(i+1).padStart(2,"0")}</span>
+          <h3>${title}</h3>
+          <p>${body}</p>
+        </article>
+      `).join("");
+
+      $("#result").style.display="block";
+      $("#result").scrollIntoView({behavior:"smooth"});
+      localStorage.setItem("lastSajuInput",JSON.stringify({
+        name:$("#name").value,date:$("#date").value,time:$("#time").value,
+        gender:$("#gender").value,focus:$("#focus").value,concern:$("#concern").value,calendar
+      }));
+    }catch(err){
+      console.error(err);
+      alert("분석 중 오류가 발생했습니다. 생년월일과 시간을 다시 확인해 주세요.");
+    }
+  });
+
+  try{
+    const saved=JSON.parse(localStorage.getItem("lastSajuInput")||"null");
+    if(saved){
+      $("#name").value=saved.name||"";
+      $("#date").value=saved.date||"";
+      $("#time").value=saved.time||"";
+      $("#gender").value=saved.gender||"male";
+      $("#focus").value=saved.focus||"";
+      $("#concern").value=saved.concern||"";
+      if(saved.calendar==="lunar")$("#lunarBtn").click();
+    }
+  }catch{}
+</script>
+</body>
 </html>
