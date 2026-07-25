@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Serif+KR:wght@600;700&display=swap');
+
+:root {
+  font-family: "Noto Sans KR", sans-serif;
+  color: #f4efe4;
+  background: #090909;
+  font-synthesis: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: #090909; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+main {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(157,116,48,.16), transparent 28%),
+    linear-gradient(#090909, #0d0c0b);
+}
+.hero {
+  min-height: 100vh;
+  padding: 32px clamp(20px, 5vw, 80px) 70px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 520px);
+  gap: 70px;
+  align-items: center;
+  max-width: 1450px;
+  margin: auto;
+  position: relative;
+}
+.brand {
+  position: absolute; top: 30px; left: clamp(20px, 5vw, 80px);
+  font-family: "Noto Serif KR"; font-size: 25px; letter-spacing: 5px;
+  color: #d5b16d;
+}
+.brand span { font-family: inherit; font-size: 10px; color: #8f8068; letter-spacing: 3px; margin-left: 10px; }
+.eyebrow { color: #b99454; font-size: 11px; letter-spacing: 4px; font-weight: 800; }
+h1 { font-family: "Noto Serif KR"; font-size: clamp(46px, 7vw, 92px); line-height: 1.16; margin: 22px 0 28px; letter-spacing: -5px; }
+h1 em { color: #d2ad68; font-style: normal; }
+.intro { max-width: 590px; color: #aaa399; font-size: 17px; line-height: 1.9; }
+.input-card {
+  background: rgba(26,24,21,.9);
+  border: 1px solid #423727;
+  padding: clamp(24px, 4vw, 42px);
+  box-shadow: 0 30px 100px rgba(0,0,0,.45);
+}
+.field.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+label { display: block; font-size: 12px; color: #c7bda9; margin-bottom: 16px; font-weight: 700; }
+input, select {
+  width: 100%; margin-top: 8px; padding: 14px 15px; color: #eee7da;
+  border: 1px solid #3b3730; background: #11100f; outline: none;
+}
+input:focus, select:focus { border-color: #b99454; }
+.segmented { display: flex; margin: 2px 0 18px; border: 1px solid #3b3730; }
+.segmented button { flex: 1; border: 0; padding: 12px; background: transparent; color: #81796d; }
+.segmented button.active { background: #b99454; color: #0b0a09; font-weight: 900; }
+.check { display: flex; align-items: center; gap: 9px; }
+.check input { width: auto; margin: 0; }
+.primary, .secondary {
+  width: 100%; padding: 17px 20px; border: 0; background: linear-gradient(90deg, #a77c34, #e0be7b);
+  color: #0c0b09; font-weight: 900; display: flex; justify-content: space-between; align-items: center;
+}
+.notice { color: #6f6961; font-size: 10px; line-height: 1.6; margin: 15px 0 0; }
+.error { background: #351a18; color: #ffb5ae; padding: 12px; margin-bottom: 15px; font-size: 12px; }
+.result { max-width: 1180px; margin: auto; padding: 100px 20px; }
+.result-head { max-width: 760px; margin-bottom: 50px; }
+.result-head h2 { font-family: "Noto Serif KR"; font-size: clamp(36px, 5vw, 62px); margin: 10px 0 20px; }
+.result-head > p:last-child { color: #bbb3a7; line-height: 1.9; }
+.pillars { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 25px; }
+.pillar {
+  min-height: 240px; border: 1px solid #3c3328; background: #171512; padding: 22px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.pillar span { color: #8e8374; font-size: 12px; margin-bottom: 16px; }
+.pillar strong { font-family: "Noto Serif KR"; font-size: 45px; line-height: 1.15; }
+.pillar small { margin-top: 17px; color: #a99e8f; }
+.e-목 strong { color:#9eba82; }.e-화 strong { color:#e18467; }.e-토 strong { color:#d4ae6a; }
+.e-금 strong { color:#d4d4d4; }.e-수 strong { color:#7896bc; }
+.element-card {
+  display: grid; grid-template-columns: 250px 1fr; gap: 35px; border: 1px solid #312c25;
+  background: #12110f; padding: 34px; margin-bottom: 24px;
+}
+.element-card h3 { font-family: "Noto Serif KR"; font-size: 30px; margin: 5px 0; }
+.bars { display: grid; gap: 12px; }
+.bar-row { display: grid; grid-template-columns: 24px 1fr 24px; gap: 12px; align-items: center; font-size: 12px; }
+.track { height: 7px; background: #2b2823; overflow: hidden; }
+.track i { display: block; height: 100%; background: linear-gradient(90deg,#9a7130,#ddbc78); }
+.report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.report-card { border: 1px solid #2f2a23; background: #11100e; padding: 34px; }
+.report-card .number { color: #8c6b35; font-size: 11px; letter-spacing: 2px; }
+.report-card h3 { font-family: "Noto Serif KR"; font-size: 25px; margin: 12px 0 20px; color: #e5d4b6; }
+.report-card p { color: #aaa398; line-height: 1.9; font-size: 14px; }
+.secondary { max-width: 260px; margin: 35px auto 0; justify-content: center; }
+footer { border-top: 1px solid #1f1d19; text-align: center; padding: 30px; color: #554f47; font-size: 10px; letter-spacing: 3px; }
+
+@media (max-width: 800px) {
+  .hero { grid-template-columns: 1fr; padding-top: 130px; gap: 35px; }
+  .brand { top: 25px; }
+  .field.two, .report-grid, .element-card { grid-template-columns: 1fr; }
+  .pillars { grid-template-columns: repeat(2, 1fr); }
+  .pillar { min-height: 190px; }
+}
+@media print {
+  .hero, footer, .secondary { display:none; }
+  body, main { background:#fff; color:#111; }
+  .result { padding:0; }
+  .report-card, .element-card, .pillar { break-inside:avoid; background:#fff; color:#111; border-color:#bbb; }
+  .report-card p, .result-head p { color:#333; }
+}
